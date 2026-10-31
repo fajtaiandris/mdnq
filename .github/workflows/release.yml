@@ -1,0 +1,59 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+          - runner: macos-15
+            target: aarch64-apple-darwin
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Test and build
+        run: |
+          cargo test --locked
+          cargo build --locked --release --target "${{ matrix.target }}"
+      - name: Package binary
+        run: |
+          cp "target/${{ matrix.target }}/release/mdnq" mdnq
+          tar -czf "mdnq-${{ matrix.target }}.tar.gz" mdnq
+          shasum -a 256 "mdnq-${{ matrix.target }}.tar.gz" > "SHA256SUMS-${{ matrix.target }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mdnq-${{ matrix.target }}
+          path: |
+            mdnq-${{ matrix.target }}.tar.gz
+            SHA256SUMS-${{ matrix.target }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mdnq-*
+          merge-multiple: true
+      - name: Merge checksums
+        run: cat SHA256SUMS-* > SHA256SUMS
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            mdnq-*.tar.gz
+            SHA256SUMS

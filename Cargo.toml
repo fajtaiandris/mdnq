@@ -1,0 +1,22 @@
+[package]
+name = "mdnq"
+version = "0.2.0"
+edition = "2021"
+description = "A colorful terminal reader for MDN"
+
+[dependencies]
+anyhow = "1"
+crossterm = "0.29"
+dirs = "6"
+ratatui = "0.30"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+scraper = "0.29"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+syntect = "5.3"
+textwrap = "0.16"
+url = "2"
+
+[profile.release]
+lto = "thin"
+strip = true
