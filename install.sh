@@ -2,7 +2,7 @@
 set -eu
 
 # Published release installer. Override MDNQ_REPO or MDNQ_INSTALL_DIR for forks.
-repo=${MDNQ_REPO:-andrisfajtai/mdnq}
+repo=${MDNQ_REPO:-fajtaiandris/mdnq}
 install_dir=${MDNQ_INSTALL_DIR:-"${HOME}/.local/bin"}
 base="https://github.com/${repo}/releases/latest/download"
 
